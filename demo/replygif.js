@@ -6,9 +6,9 @@ import {registerItem, MenuItem, IconItem} from "../src/menu/items"
 import {elt} from "../src/dom"
 import {addInputRules, Rule} from "../src/inputrules/inputrules"
 import {Tooltip} from "../src/menu/tooltip"
+import insertCSS from "insert-css"
 import "../src/menu/menubar"
 import "../src/inputrules/autoinput"
-import {fromDOM} from "../src/convert/from_dom"
 
 function ajaxGet(url, success, errback){
   var httpRequest;
@@ -34,31 +34,9 @@ function ajaxGet(url, success, errback){
 
 }
 
-const dinos = ["brontosaurus", "stegosaurus", "triceratops", "tyrannosaurus", "pterodactyl"]
-
-nodeTypes.dino = new NodeType({name: "dino", type: "span", defaultAttrs: {type: "brontosaurus"}})
-
-// NOTE: The code below, which defines a serializer and parser for the
-// dino type to the DOM format, is ad-hoc and hacky because no proper
-// API for such extensions exists yet.
-
-renderDOM.dino = node => elt("img", {"dino-type": node.attrs.type,
-                                     class: "dinosaur",
-                                     src: "dino/" + node.attrs.type + ".png",
-                                     title: node.attrs.type})
-
-let oldImg = parseTags.img
-parseTags.img = (dom, context) => {
-  if (dom.className == "dinosaur") context.insert(new Span("dino", {type: dom.getAttribute("dino-type")}))
-  else return oldImg(dom, context)
-}
-
-//     GIFS_URL = 
 
 class AjaxItems extends MenuItem {
-  constructor() {
-    super()
-  }
+  createItem(){ throw "You need to implement this"}
   targetUrl(){ throw "You need to implement this"}
   fetch(cb){
     if (this.items && this.items.length) return cb();
@@ -90,7 +68,7 @@ class GifItem extends MenuItem {
     this.title = gif["caption"];
   }
   render(menu) {
-    let button = elt("img", {src: this.thumbnail, title: this.title})
+    let button = elt("img", {class: "ProseMirror-replygif-gif", src: this.thumbnail, title: this.title})
     let over = button.addEventListener("mouseover", e => {
       button.src = this.image;
     })
@@ -121,7 +99,7 @@ class TagItem extends AjaxItems {
     return "http://replygif.net/api/gifs?api-key=39YAprx5Yi&tag=" + this.tag;
   }
   button() {
-    return elt("span", {}, this.tag);
+    return elt("span", {class: "ProseMirror-replgif-tag"}, this.tag);
   }
 }
 
@@ -141,11 +119,27 @@ class ReplyGifItem extends AjaxItems {
     return elt("span", {}, "ReplyGif");
   }
 }
-// let dinoItems = dinos.map(name => new DinoItem(name, pm => insertDino(pm, name)))
 registerItem("inline", new ReplyGifItem())
 
-function insertDino(pm, name) {
-  pm.apply(pm.tr.insertInline(pm.selection.head, new Span("dino", {type: name})))
+defineOption("replygif", false)
+
+
+
+insertCSS(`
+img.ProseMirror-replygif-gif {
+  display: inline;
+  margin: 2px;
+  height: 3.5em;
+  float: left;
 }
 
-defineOption("replygif", false)
+.ProseMirror-replgif-tag {
+  display: inline;
+  padding: 3px;
+  margin: 2px;
+  float: left;
+  background: #eee;
+}
+
+
+`)
