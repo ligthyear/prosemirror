@@ -8,6 +8,8 @@ import "../src/menu/menubar"
 import "../src/menu/buttonmenu"
 import "../src/collab"
 
+import "./replygif"
+
 let te = document.querySelector("#content")
 te.style.display = "none"
 
@@ -47,6 +49,7 @@ function makeEditor(where, collab) {
     menuBar: {float: true},
     buttonMenu: {followCursor: true},
     doc: doc,
+    replygif: true,
     collab: collab
   })
 }
